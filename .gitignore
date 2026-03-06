@@ -1,26 +1,2 @@
-# Dependencies
+.aws-sam/
 node_modules/
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Build output
-dist/
-build/
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-logs/
-*.log
-
-# OS metadata
-.DS_Store
-Thumbs.db
-
-# IDEs
-.vscode/
-.idea/
