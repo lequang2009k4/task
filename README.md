@@ -9,17 +9,36 @@ cd serverless-task-manager-api
 ## Project Structure
 ```
 serverless-task-manager-api/
-├── src/                        # Core application logic
-│   ├── utils/                  
-│   │   └── ddbClient.js        # DynamoDB client initialization and response helpers
-│   ├── create.js               # POST: Create a new task
-│   ├── delete.js               # DELETE: Remove a task by ID
-│   ├── getAll.js               # GET: Retrieve all tasks 
-│   └── getById.js              # GET: Retrieve specific task details by ID
-├── package.json                # Project dependencies 
-├── package-lock.json           # Locked versions of dependencies
-├── template.yaml               # AWS Infrastructure as Code (IaC) definition
-└── samconfig.toml              # Deployment configuration parameters
+│
+├── src/
+│   ├── handlers/                 # Lambda entry points
+│   │   ├── createTask.js
+│   │   ├── getAllTasks.js
+│   │   ├── getTaskById.js
+│   │   └── deleteTask.js
+│   │
+│   ├── services/                 # Business logic
+│   │   └── taskService.js
+│   │
+│   ├── repositories/             # Data access layer
+│   │   └── taskRepository.js
+│   │
+│   ├── models/                   # Data model
+│   │   └── taskModel.js
+│   │
+│   ├── utils/                    # Helper functions
+│   │   ├── response.js
+│   │   └── validator.js
+│   │
+│   └── config/
+│       └── dynamoClient.js
+│
+├── infrastructure/               # IaC
+│   └── template.yaml             # SAM template
+│
+│
+├── package.json
+└── README.md
 ```
 # 2. Prerequisites & Installation
 Ensure you have the AWS SAM CLI and Node.js installed.
@@ -27,7 +46,7 @@ Ensure you have the AWS SAM CLI and Node.js installed.
 npm install
 ```
 # 3. Deployment with AWS SAM
-## 3.1. Build: `sam build`
+## 3.1. Build: `sam build -t sam build -t infrastructure/template.yaml`
 ## 3.2. Deploy
 ### First Time: `sam deploy --guided`
 Key Configuration Options:
