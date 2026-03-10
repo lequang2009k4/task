@@ -8,8 +8,12 @@ import {
 import { docClient, TABLE_NAME } from "../config/dynamoClient.js";
 import { Task } from "../models/taskModel.js";
 
+/**
+ * Task Repository
+ * Handles direct database operations using DynamoDB DocumentClient.
+ */
 export const taskRepository = {
-    // Lưu một task mới hoặc ghi đè task cũ
+    // Save a new task or overwrite an existing one
     async save(task) {
         const command = new PutCommand({
             TableName: TABLE_NAME,
@@ -19,27 +23,30 @@ export const taskRepository = {
         return task;
     },
 
-    // Lấy một task theo ID
+    // Retrieve a single task by its ID
     async getById(id) {
         const command = new GetCommand({
             TableName: TABLE_NAME,
             Key: { id },
         });
         const { Item } = await docClient.send(command);
-        // Trả về một instance của Task Model để đảm bảo tính nhất quán
+        
+        // Return a Task Model instance to ensure data consistency
         return Item ? new Task(Item) : null;
     },
 
-    // Lấy tất cả task (Scan)
+    // Retrieve all tasks from the table (Scan operation)
     async getAll() {
         const command = new ScanCommand({
             TableName: TABLE_NAME,
         });
         const { Items } = await docClient.send(command);
+        
+        // Map raw items to Task Model instances
         return (Items || []).map(item => new Task(item));
     },
 
-    // Xóa task theo ID
+    // Delete a task by its ID
     async delete(id) {
         const command = new DeleteCommand({
             TableName: TABLE_NAME,
@@ -47,5 +54,4 @@ export const taskRepository = {
         });
         return await docClient.send(command);
     }
-
 };

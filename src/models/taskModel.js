@@ -1,19 +1,25 @@
+/**
+ * Task Entity Model
+ * Handles data structure for a single task.
+ */
 export class Task {
     /**
-     * @param {Object} data - Dữ liệu thô để khởi tạo Task
-     * @param {string} data.id - ID duy nhất (thường là UUID)
-     * @param {string} data.title - Tiêu đề công việc
-     * @param {string} [data.createdAt] - Thời gian tạo
+     * @param {Object} data - Raw data to initialize Task
+     * @param {string} data.id - Unique ID (usually UUID)
+     * @param {string} data.title - Task title
+     * @param {string} [data.status='pending'] - Current task status
+     * @param {string} [data.createdAt] - Creation timestamp
      */
-    constructor({ id, title, status = 'pending', createdAt } = {}) { //Thêm = {} vào cuối tham số để tránh crash.
+    constructor({ id, title, status = 'pending', createdAt } = {}) { 
+        // Default to empty object to prevent destructuring crash
         this.id = id;
         this.title = title;
         this.status = status;
         this.createdAt = createdAt || new Date().toISOString();
     }
 
-    // Phương thức kiểm tra dữ liệu hợp lệ cơ bản bên trong Model
+    // Basic data validation methods within the Model
 
-    // Phương thức hỗ trợ chuyển đổi dữ liệu để lưu vào DynamoDB nếu cần
+    // Helper methods for data conversion to save to DynamoDB if needed
 
 }

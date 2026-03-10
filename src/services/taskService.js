@@ -2,40 +2,48 @@ import { v4 as uuidv4 } from "uuid";
 import { taskRepository } from "../repositories/taskRepository.js";
 import { Task } from "../models/taskModel.js";
 
+/**
+ * Task Service
+ * Orchestrates business logic and coordinates data between Handlers and Repositories.
+ */
 export const taskService = {
-    // Logic tạo mới một công việc
+    // Logic to create a new task
     async createNewTask(data) {
-        // 1. Tạo thực thể Task mới (Model lo phần cấu hình mặc định)
+        // 1. Create a new Task entity (Model handles default configurations)
         const newTask = new Task({
             id: uuidv4(),
             title: data.title,
         });
-        // 2. Kiểm tra tính hợp lệ (Validation logic)
 
-        // 3. Gọi Repository để lưu vào Database
+        // 2. Validation logic (Place additional business rules here)
+
+        // 3. Call Repository to persist data in the Database
         return await taskRepository.save(newTask);
     },
 
-    // Logic lấy chi tiết công việc
+    // Logic to retrieve task details
     async getTaskDetails(id) {
-        if (!id) throw new Error("Task ID là bắt buộc.");
+        if (!id) throw new Error("Task ID is required.");
 
         const task = await taskRepository.getById(id);
         if (!task) {
-            throw new Error(`Không tìm thấy công việc với ID: ${id}`);
+            throw new Error(`Task with ID ${id} not found.`);
         }
         return task;
     },
 
-    // Logic lấy toàn bộ danh sách
+    // Logic to retrieve the full list of tasks
     async listAllTasks() {
         return await taskRepository.getAll();
     },
 
-    // Logic xóa công việc
+    // Logic to remove a task
     async removeTask(id) {
-        // Có thể thêm logic kiểm tra quyền sở hữu ở đây nếu cần
-        await this.getTaskDetails(id); // Kiểm tra xem task có tồn tại không trước khi xóa
+        // Ownership check or additional business logic can be added here
+        
+        // Ensure the task exists before attempting deletion
+        await this.getTaskDetails(id); 
+        
         return await taskRepository.delete(id);
     }
 };
