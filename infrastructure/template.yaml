@@ -19,6 +19,35 @@ Globals:
     # ReservedConcurrentExecutions: 2 # Limits to 10 simultaneous requests to protect the database and budget
 
 Resources:
+  ##########################################################################
+  # 1. CONFIG COGNITO (TO MANAGENMENT USER)
+  ##########################################################################
+  MyUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: MyTaskAppUsers
+      UsernameAttributes: [email]
+      AutoVerifiedAttributes: [email]
+
+  MyUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref MyUserPool
+      ExplicitAuthFlows: [ADMIN_NO_SRP_AUTH, USER_PASSWORD_AUTH]
+
+  ##########################################################################
+  # 2. DEFINE API HAVE AUTHORIZER
+  ##########################################################################
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: MyCognitoAuth
+        Authorizers:
+          MyCognitoAuth:
+            UserPoolArn: !GetAtt MyUserPool.Arn
+
   # DynamoDB Table for storing tasks
   TasksTable:
     Type: AWS::DynamoDB::Table  # Declares a NoSQL database table
@@ -71,6 +100,7 @@ Resources:
         CreateApi:
           Type: Api  # Creates an HTTP API endpoint to route requests to this Lambda
           Properties:
+            RestApiId: !Ref MyApi #Connect with API have Auth
             Path: /tasks
             Method: post
 
@@ -89,6 +119,7 @@ Resources:
         GetAllApi:
           Type: Api
           Properties:
+            RestApiId: !Ref MyApi #Connect with API have Auth
             Path: /tasks
             Method: get
 
@@ -107,6 +138,7 @@ Resources:
         GetByIdApi:
           Type: Api
           Properties:
+            RestApiId: !Ref MyApi #Connect with API have Auth
             Path: /tasks/{id}
             Method: get
 
@@ -126,10 +158,15 @@ Resources:
         DeleteApi:
           Type: Api
           Properties:
+            RestApiId: !Ref MyApi #Connect with API have Auth
             Path: /tasks/{id}
             Method: delete
 
 Outputs:
   ApiUrl:
     Description: "Base URL for the API Gateway"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/tasks"
+    Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/tasks"
+  UserPoolId:
+    Value: !Ref MyUserPool
+  UserPoolClientId:
+    Value: !Ref MyUserPoolClient
