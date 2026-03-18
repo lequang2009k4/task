@@ -70,32 +70,81 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST  # On-demand scaling (pay only for what you use)
-  # --- LOG RETENTION POLICY ---
-  # Creates a separate LogGroup for each function to control automatic log deletion after 7 daysy
+  ##########################################################################
+  # 4. MONITORING DASHBOARD (Yêu cầu chính của Tuần 2)
+  ##########################################################################
+  MainMonitoringDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "Task-Manager-Monitor-${Env}"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "text",
+              "x": 0, "y": 0, "width": 24, "height": 1,
+              "properties": {
+                "markdown": "# 🚀 Monitoring Dashboard (${Env})"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0, "y": 1, "width": 12, "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/Lambda", "Invocations", "FunctionName", "${CreateTaskFunction}", { "label": "Create" } ],
+                  [ "...", "${GetAllTasksFunction}", { "label": "GetAll" } ],
+                  [ "...", "${GetTaskByIdFunction}", { "label": "GetById" } ],
+                  [ "...", "${DeleteTaskFunction}", { "label": "Delete" } ]
+                ],
+                "period": 300,
+                "stat": "Sum",
+                "region": "${AWS::Region}",
+                "title": "1. Invocations"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12, "y": 1, "width": 12, "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/Lambda", "Duration", "FunctionName", "${CreateTaskFunction}", { "label": "Create" } ],
+                  [ "...", "${GetAllTasksFunction}", { "label": "GetAll" } ],
+                  [ "...", "${GetTaskByIdFunction}", { "label": "GetById" } ],
+                  [ "...", "${DeleteTaskFunction}", { "label": "Delete" } ]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "${AWS::Region}",
+                "title": "2. Duration (ms)"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0, "y": 7, "width": 24, "height": 6,
+              "properties": {
+                "metrics": [
+                  [ { "expression": "m1/n1*100", "label": "Error Rate %", "id": "e1", "color": "#d62728" } ],
+                  [ "AWS/Lambda", "Errors", "FunctionName", "${CreateTaskFunction}", { "id": "m1", "visible": false } ],
+                  [ ".", "Invocations", ".", ".", { "id": "n1", "visible": false } ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "3. Error Rate % - example cho CreateTask"
+              }
+            }
+          ]
+        }
+  ##########################################################################
+  # 5. LAMBDA FUNCTIONS & LOG GROUPS
+  ##########################################################################
+  # POST /tasks
   CreateTaskLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${CreateTaskFunction}"
       RetentionInDays: 7
-
-  GetAllTasksLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub "/aws/lambda/${GetAllTasksFunction}"
-      RetentionInDays: 7
-
-  GetTaskByIdLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub "/aws/lambda/${GetTaskByIdFunction}"
-      RetentionInDays: 7
-
-  DeleteTaskLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub "/aws/lambda/${DeleteTaskFunction}"
-      RetentionInDays: 7
-  # POST /tasks
   CreateTaskFunction:
     Type: AWS::Serverless::Function # A Lambda entity supported by SAM
     Properties:
@@ -115,6 +164,11 @@ Resources:
             Method: post
 
   # GET /tasks
+  GetAllTasksLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${GetAllTasksFunction}"
+      RetentionInDays: 7
   GetAllTasksFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -134,6 +188,11 @@ Resources:
             Method: get
 
   # GET /tasks/{id}
+  GetTaskByIdLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${GetTaskByIdFunction}"
+      RetentionInDays: 7
   GetTaskByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -153,6 +212,11 @@ Resources:
             Method: get
 
   # DELETE /tasks/{id}
+  DeleteTaskLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${DeleteTaskFunction}"
+      RetentionInDays: 7
   DeleteTaskFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -182,3 +246,6 @@ Outputs:
     Value: !Ref MyUserPoolClient
   Environment:
     Value: !Ref Env
+  DashboardUrl:
+    Description: "Link to your Monitoring Dashboard"
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=Task-Manager-Monitor-${Env}"
