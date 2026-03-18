@@ -64,7 +64,7 @@ Resources:
     Properties:
       TableName: !Sub "MySimpleTasks-${Env}"
       AttributeDefinitions:     # Declares columns used as keys
-        - AttributeName: ida
+        - AttributeName: id
           AttributeType: S
       KeySchema:                # Defines 'id' as the HASH (Partition Key) used for data lookups
         - AttributeName: id
